@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>502 Bad Gateway</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tahoma', 'MS Sans Serif', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+            /* The iconic Windows XP "Bliss" wallpaper */
+            background: url('https://i.redd.it/puzkje595kf81.jpg') center center / cover no-repeat fixed;
+            background-color: #3A6EA5;
+        }
+
+        /* Desktop Area */
+        .desktop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 30px;
+            z-index: 1;
+        }
+
+        /* Desktop Icons */
+        .desktop-icons {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .desktop-icon {
+            width: 75px;
+            padding: 5px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-radius: 3px;
+        }
+
+        .desktop-icon:hover {
+            background: rgba(11, 97, 255, 0.3);
+            border-color: rgba(11, 97, 255, 0.5);
+        }
+
+        .desktop-icon.selected {
+            background: rgba(11, 97, 255, 0.4);
+            border-color: rgba(11, 97, 255, 0.7);
+        }
+
+        .desktop-icon svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 3px;
+        }
+
+        .desktop-icon span {
+            font-size: 11px;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            display: block;
+            word-wrap: break-word;
+        }
+
+        /* Windows */
+        .window {
+            position: absolute;
+            background: #ECE9D8;
+            border: 1px solid #0054E3;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+            min-width: 300px;
+            z-index: 10;
+        }
+
+        .window.active {
+            z-index: 100;
+        }
+
+        .titlebar {
+            background: linear-gradient(180deg,
+                    #0A246A 0%,
+                    #0F6AC2 10%,
+                    #1F8AE8 30%,
+                    #0F6AC2 50%,
+                    #0A4695 70%,
+                    #0A246A 100%);
+            color: white;
+            padding: 3px 5px;
+            cursor: move;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 7px 7px 0 0;
+            height: 28px;
+            user-select: none;
+        }
+
+        .window.inactive .titlebar {
+            background: linear-gradient(180deg,
+                    #7A96DF 0%,
+                    #A0B8E8 30%,
+                    #B8C8F0 50%,
+                    #A0B8E8 70%,
+                    #7A96DF 100%);
+        }
+
+        .titlebar-text {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+        }
+
+        .window-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 2px;
+        }
+
+        .window-button {
+            width: 21px;
+            height: 21px;
+            background: linear-gradient(180deg, #3C8CF5 0%, #1A5EBC 50%, #0E47A1 100%);
+            border: 1px solid #0A246A;
+            border-radius: 3px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+        }
+
+        .window-button:hover {
+            background: linear-gradient(180deg, #5CA8FF 0%, #3A7EDA 50%, #2A67C1 100%);
+        }
+
+        .window-button.close {
+            background: linear-gradient(180deg, #E97458 0%, #C9190B 50%, #A11000 100%);
+            border-color: #6E0000;
+        }
+
+        .window-button.close:hover {
+            background: linear-gradient(180deg, #FF9478 0%, #E93920 50%, #C12E10 100%);
+        }
+
+        .window-content {
+            background: white;
+            padding: 10px;
+        }
+
+        /* Internet Explorer Window */
+        #ie-window {
+            width: 600px;
+            top: 50px;
+            left: 100px;
+        }
+
+        .ie-toolbar {
+            background: linear-gradient(180deg, #F6F4EC 0%, #EBE8D8 50%, #D9D4C0 100%);
+            padding: 5px;
+            border-bottom: 1px solid #919B9C;
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .ie-button {
+            padding: 3px 8px;
+            background: linear-gradient(180deg, #FFFFFF 0%, #ECE9D8 50%, #D8D4C4 100%);
+            border: 1px solid #8E8F8F;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Tahoma', sans-serif;
+        }
+
+        .ie-button:hover {
+            background: linear-gradient(180deg, #FFFFFF 0%, #F5F3EB 50%, #E8E4D8 100%);
+            border-color: #0054E3;
+        }
+
+        .ie-button:active {
+            background: linear-gradient(180deg, #D8D4C4 0%, #ECE9D8 100%);
+        }
+
+        .address-bar {
+            background: white;
+            border: 1px solid #7F9DB9;
+            padding: 3px 5px;
+            margin: 5px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .address-bar-label {
+            color: #000;
+            font-size: 11px;
+        }
+
+        .address-bar-input {
+            flex: 1;
+            background: white;
+            padding: 2px 5px;
+            border: 1px inset #7F9DB9;
+            font-size: 11px;
+            font-family: 'Tahoma', sans-serif;
+        }
+
+        .error-content {
+            padding: 40px 20px;
+            text-align: center;
+            background: white;
+        }
+
+        .error-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .error-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 10px;
+        }
+
+        .error-message {
+            font-size: 12px;
+            color: #000;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .retry-button {
+            padding: 6px 24px;
+            background: linear-gradient(180deg, #FFFFFF 0%, #ECE9D8 50%, #D8D4C4 100%);
+            border: 1px solid #003C74;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Tahoma', sans-serif;
+        }
+
+        .retry-button:hover {
+            background: linear-gradient(180deg, #FFFFFF 0%, #F5F3EB 50%, #E8E4D8 100%);
+        }
+
+        .retry-button:active {
+            background: linear-gradient(180deg, #D8D4C4 0%, #ECE9D8 100%);
+        }
+
+        /* MS Paint Window */
+        #paint-window {
+            width: 700px;
+            top: 150px;
+            left: 250px;
+        }
+
+        .paint-menubar {
+            background: #ECE9D8;
+            padding: 2px 5px;
+            border-bottom: 1px solid #ACA899;
+            display: flex;
+            gap: 2px;
+        }
+
+        .paint-menu-item {
+            padding: 2px 8px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .paint-menu-item:hover {
+            background: #316AC5;
+            color: white;
+        }
+
+        .paint-toolbar {
+            background: #ECE9D8;
+            padding: 3px 5px;
+            border-bottom: 1px solid #ACA899;
+            display: flex;
+            gap: 2px;
+        }
+
+        .paint-toolbar-btn {
+            padding: 2px 6px;
+            background: linear-gradient(180deg, #FFFFFF 0%, #ECE9D8 50%, #D8D4C4 100%);
+            border: 1px solid #8E8F8F;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+
+        .paint-main {
+            display: flex;
+            background: #ECE9D8;
+        }
+
+        .paint-toolbox {
+            background: #ECE9D8;
+            padding: 5px;
+            border-right: 1px solid #ACA899;
+            display: grid;
+            grid-template-columns: repeat(2, 24px);
+            gap: 2px;
+            align-content: start;
+        }
+
+        .paint-tool {
+            width: 24px;
+            height: 24px;
+            background: #ECE9D8;
+            border: 1px solid #ECE9D8;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .paint-tool:hover {
+            border: 1px solid #0054E3;
+        }
+
+        .paint-tool.active {
+            border: 1px inset #808080;
+            background: #C0C0C0;
+        }
+
+        .paint-canvas-container {
+            flex: 1;
+            padding: 5px;
+            background: #808080;
+            overflow: auto;
+        }
+
+        #paint-canvas {
+            background: white;
+            cursor: crosshair;
+            display: block;
+        }
+
+        .paint-colors {
+            background: #ECE9D8;
+            padding: 5px 10px;
+            border-top: 1px solid #ACA899;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .current-colors {
+            position: relative;
+            width: 30px;
+            height: 30px;
+        }
+
+        .bg-color {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 1px solid #808080;
+        }
+
+        .fg-color {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            background: black;
+            border: 1px solid #808080;
+        }
+
+        .color-palette {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1px;
+            max-width: 300px;
+        }
+
+        .color-box {
+            width: 16px;
+            height: 16px;
+            border: 1px solid #808080;
+            cursor: pointer;
+        }
+
+        .color-box:hover {
+            border-color: white;
+        }
+
+        /* Taskbar */
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(180deg,
+                    #245EDC 0%,
+                    #3168D9 3%,
+                    #4E91E4 6%,
+                    #3A79DA 10%,
+                    #245EDC 12%,
+                    #1941A5 95%,
+                    #1941A5 100%);
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .start-button {
+            background: linear-gradient(180deg,
+                    #3C9A3C 0%,
+                    #2D8C2D 20%,
+                    #1E7D1E 50%,
+                    #1A6E1A 80%,
+                    #0E5F0E 100%);
+            border: none;
+            border-radius: 0 8px 8px 0;
+            padding: 2px 12px 2px 8px;
+            height: 100%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            font-family: 'Franklin Gothic Medium', 'Tahoma', sans-serif;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+            font-style: italic;
+        }
+
+        .start-button:hover {
+            background: linear-gradient(180deg,
+                    #4CAF4C 0%,
+                    #3D9F3D 20%,
+                    #2E8E2E 50%,
+                    #2A7F2A 80%,
+                    #1E6F1E 100%);
+        }
+
+        .start-button svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .taskbar-programs {
+            flex: 1;
+            display: flex;
+            gap: 3px;
+            padding: 3px 5px;
+            height: 100%;
+            align-items: center;
+        }
+
+        .taskbar-item {
+            background: linear-gradient(180deg,
+                    #3C88D4 0%,
+                    #2A73C5 30%,
+                    #1E5BAC 70%,
+                    #1A4F96 100%);
+            border: 1px solid #0A246A;
+            border-radius: 2px;
+            padding: 2px 8px;
+            height: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: white;
+            font-size: 11px;
+            min-width: 120px;
+            max-width: 180px;
+        }
+
+        .taskbar-item:hover {
+            background: linear-gradient(180deg,
+                    #4C98E4 0%,
+                    #3A83D5 30%,
+                    #2E6BBC 70%,
+                    #2A5FA6 100%);
+        }
+
+        .taskbar-item.active {
+            background: linear-gradient(180deg,
+                    #1E5BAC 0%,
+                    #2A73C5 30%,
+                    #3C88D4 70%,
+                    #2A73C5 100%);
+            border: 1px inset #0A246A;
+        }
+
+        .taskbar-item svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .taskbar-item span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .system-tray {
+            background: linear-gradient(180deg,
+                    #0F8EE9 0%,
+                    #1375CD 50%,
+                    #0D5BA3 100%);
+            height: 100%;
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-left: 1px solid #0A4695;
+        }
+
+        .tray-icon {
+            font-size: 12px;
+        }
+
+        .tray-time {
+            color: white;
+            font-size: 11px;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Resize handle */
+        .resize-handle {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 15px;
+            height: 15px;
+            cursor: se-resize;
+        }
+
+        /* Start Menu */
+        .start-menu {
+            position: fixed;
+            bottom: 30px;
+            left: 0;
+            width: 380px;
+            background: linear-gradient(180deg, #3168D9 0%, #4E91E4 3%, #245EDC 6%, #1941A5 100%);
+            border: 2px solid #1941A5;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 2px -2px 10px rgba(0, 0, 0, 0.4);
+            z-index: 999;
+            display: none;
+        }
+
+        .start-menu.open {
+            display: block;
+        }
+
+        .start-menu-header {
+            background: linear-gradient(180deg, #1F5FC9 0%, #3D7DE8 50%, #1F5FC9 100%);
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #ECE9D8 0%, #C0C0C0 100%);
+            border: 2px solid white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .user-name {
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .start-menu-body {
+            display: flex;
+            background: white;
+        }
+
+        .start-menu-left {
+            flex: 1;
+            padding: 5px 0;
+            background: white;
+        }
+
+        .start-menu-right {
+            width: 150px;
+            background: #D3E5FA;
+            padding: 5px 0;
+            border-left: 1px solid #A4C8F0;
+        }
+
+        .start-menu-item {
+            padding: 6px 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .start-menu-left .start-menu-item:hover {
+            background: #316AC5;
+            color: white;
+        }
+
+        .start-menu-right .start-menu-item:hover {
+            background: #316AC5;
+            color: white;
+        }
+
+        .start-menu-item svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .start-menu-right .start-menu-item svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .start-menu-separator {
+            height: 1px;
+            background: #D0D0BF;
+            margin: 5px 10px;
+        }
+
+        .start-menu-footer {
+            background: linear-gradient(180deg, #3168D9 0%, #245EDC 50%, #1941A5 100%);
+            padding: 8px 10px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .start-menu-footer-btn {
+            padding: 4px 12px;
+            background: linear-gradient(180deg, #4C98E4 0%, #2A73C5 50%, #1A4F96 100%);
+            border: 1px solid #0A246A;
+            border-radius: 3px;
+            color: white;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .start-menu-footer-btn:hover {
+            background: linear-gradient(180deg, #5CA8FF 0%, #3A83D5 50%, #2A5FA6 100%);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Desktop -->
+    <div class="desktop">
+        <!-- Desktop Icons -->
+        <div class="desktop-icons">
+            <div class="desktop-icon">
+                <svg viewBox="0 0 48 48">
+                    <rect x="4" y="8" width="40" height="32" rx="2" fill="#ECE9D8" stroke="#0054E3" stroke-width="2" />
+                    <rect x="8" y="12" width="32" height="20" fill="#3A6EA5" />
+                    <rect x="18" y="40" width="12" height="4" fill="#808080" />
+                    <rect x="14" y="44" width="20" height="2" fill="#808080" />
+                </svg>
+                <span>My Computer</span>
+            </div>
+            <div class="desktop-icon">
+                <svg viewBox="0 0 48 48">
+                    <rect x="6" y="6" width="36" height="36" rx="2" fill="#FFEB3B" stroke="#FBC02D" stroke-width="2" />
+                    <rect x="10" y="6" width="28" height="6" fill="#FBC02D" />
+                    <rect x="12" y="16" width="24" height="2" fill="#FBC02D" />
+                    <rect x="12" y="22" width="24" height="2" fill="#FBC02D" />
+                    <rect x="12" y="28" width="16" height="2" fill="#FBC02D" />
+                </svg>
+                <span>My Documents</span>
+            </div>
+            <div class="desktop-icon">
+                <svg viewBox="0 0 48 48">
+                    <ellipse cx="24" cy="38" rx="16" ry="6" fill="#ECE9D8" stroke="#808080" stroke-width="2" />
+                    <path d="M8 18 L8 38 C8 42 15 46 24 46 C33 46 40 42 40 38 L40 18" fill="#ECE9D8" stroke="#808080"
+                        stroke-width="2" />
+                    <ellipse cx="24" cy="18" rx="16" ry="6" fill="#ECE9D8" stroke="#808080" stroke-width="2" />
+                </svg>
+                <span>Recycle Bin</span>
+            </div>
+            <div class="desktop-icon" onclick="bringToFront('ie-window')">
+                <svg viewBox="0 0 48 48">
+                    <circle cx="24" cy="24" r="20" fill="#0078D7" stroke="#005A9E" stroke-width="2" />
+                    <text x="24" y="32" text-anchor="middle" fill="white" font-size="24" font-weight="bold"
+                        font-family="serif" font-style="italic">e</text>
+                </svg>
+                <span>Internet Explorer</span>
+            </div>
+            <div class="desktop-icon" onclick="bringToFront('paint-window')">
+                <svg viewBox="0 0 48 48">
+                    <rect x="4" y="4" width="40" height="40" rx="2" fill="#ECE9D8" stroke="#808080" stroke-width="2" />
+                    <circle cx="12" cy="36" r="4" fill="#FF0000" />
+                    <circle cx="24" cy="36" r="4" fill="#00FF00" />
+                    <circle cx="36" cy="36" r="4" fill="#0000FF" />
+                    <path d="M10 10 L20 25 L15 28 L8 15 Z" fill="#FFA500" stroke="#000" stroke-width="1" />
+                </svg>
+                <span>Paint</span>
+            </div>
+        </div>
+
+        <!-- Internet Explorer Window -->
+        <div id="ie-window" class="window active" data-window="ie">
+            <div class="titlebar">
+                <div class="titlebar-text">
+                    <svg class="window-icon" viewBox="0 0 16 16">
+                        <circle cx="8" cy="8" r="7" fill="#0078D7" />
+                        <text x="8" y="12" text-anchor="middle" fill="white" font-size="10" font-weight="bold"
+                            font-style="italic">e</text>
+                    </svg>
+                    <span>Application Offline - Microsoft Internet Explorer</span>
+                </div>
+                <div class="window-controls">
+                    <div class="window-button" onclick="minimizeWindow('ie-window')">_</div>
+                    <div class="window-button">□</div>
+                    <div class="window-button close" onclick="closeWindow('ie-window')">✕</div>
+                </div>
+            </div>
+            <div class="ie-toolbar">
+                <button class="ie-button">← Back</button>
+                <button class="ie-button">→</button>
+                <button class="ie-button">✕</button>
+                <button class="ie-button" onclick="location.reload()">🔄</button>
+                <button class="ie-button">🏠</button>
+            </div>
+            <div class="address-bar">
+                <span class="address-bar-label">Address</span>
+                <input type="text" class="address-bar-input" value="http://localhost/" readonly>
+            </div>
+            <div class="window-content">
+                <div class="error-content">
+                    <div class="error-icon">⚠️</div>
+                    <div class="error-title">502 Bad Gateway</div>
+                    <div class="error-message">
+                        <strong>This application is currently offline.</strong><br><br>
+                        The server is temporarily unable to service your request<br>
+                        due to maintenance downtime or capacity problems.<br><br>
+                        Please try again in a few moments.
+                    </div>
+                    <button class="retry-button" onclick="location.reload()">🔄 Retry</button>
+                </div>
+            </div>
+            <div class="resize-handle"></div>
+        </div>
+
+        <!-- MS Paint Window -->
+        <div id="paint-window" class="window inactive" data-window="paint">
+            <div class="titlebar">
+                <div class="titlebar-text">
+                    <svg class="window-icon" viewBox="0 0 16 16">
+                        <rect x="1" y="1" width="14" height="14" fill="#ECE9D8" stroke="#808080" />
+                        <circle cx="5" cy="11" r="2" fill="#FF0000" />
+                        <circle cx="8" cy="11" r="2" fill="#00FF00" />
+                        <circle cx="11" cy="11" r="2" fill="#0000FF" />
+                    </svg>
+                    <span>untitled - Paint</span>
+                </div>
+                <div class="window-controls">
+                    <div class="window-button" onclick="minimizeWindow('paint-window')">_</div>
+                    <div class="window-button">□</div>
+                    <div class="window-button close" onclick="closeWindow('paint-window')">✕</div>
+                </div>
+            </div>
+            <div class="paint-menubar">
+                <span class="paint-menu-item">File</span>
+                <span class="paint-menu-item">Edit</span>
+                <span class="paint-menu-item">View</span>
+                <span class="paint-menu-item">Image</span>
+                <span class="paint-menu-item">Colors</span>
+                <span class="paint-menu-item">Help</span>
+            </div>
+            <div class="paint-main">
+                <div class="paint-toolbox">
+                    <div class="paint-tool" data-tool="select" title="Free-Form Select">⬚</div>
+                    <div class="paint-tool" data-tool="select2" title="Select">▭</div>
+                    <div class="paint-tool" data-tool="eraser" title="Eraser">🧽</div>
+                    <div class="paint-tool" data-tool="fill" title="Fill With Color">🪣</div>
+                    <div class="paint-tool" data-tool="picker" title="Pick Color">💉</div>
+                    <div class="paint-tool" data-tool="magnifier" title="Magnifier">🔍</div>
+                    <div class="paint-tool active" data-tool="pencil" title="Pencil">✏️</div>
+                    <div class="paint-tool" data-tool="brush" title="Brush">🖌️</div>
+                    <div class="paint-tool" data-tool="spray" title="Airbrush">💨</div>
+                    <div class="paint-tool" data-tool="text" title="Text">A</div>
+                    <div class="paint-tool" data-tool="line" title="Line">╱</div>
+                    <div class="paint-tool" data-tool="curve" title="Curve">⌒</div>
+                    <div class="paint-tool" data-tool="rectangle" title="Rectangle">▭</div>
+                    <div class="paint-tool" data-tool="polygon" title="Polygon">⬠</div>
+                    <div class="paint-tool" data-tool="ellipse" title="Ellipse">◯</div>
+                    <div class="paint-tool" data-tool="rounded" title="Rounded Rectangle">▢</div>
+                </div>
+                <div class="paint-canvas-container">
+                    <canvas id="paint-canvas" width="550" height="350"></canvas>
+                </div>
+            </div>
+            <div class="paint-colors">
+                <div class="current-colors">
+                    <div class="bg-color" id="bg-color"></div>
+                    <div class="fg-color" id="fg-color"></div>
+                </div>
+                <div class="color-palette">
+                    <div class="color-box" style="background:#000000" data-color="#000000"></div>
+                    <div class="color-box" style="background:#808080" data-color="#808080"></div>
+                    <div class="color-box" style="background:#800000" data-color="#800000"></div>
+                    <div class="color-box" style="background:#808000" data-color="#808000"></div>
+                    <div class="color-box" style="background:#008000" data-color="#008000"></div>
+                    <div class="color-box" style="background:#008080" data-color="#008080"></div>
+                    <div class="color-box" style="background:#000080" data-color="#000080"></div>
+                    <div class="color-box" style="background:#800080" data-color="#800080"></div>
+                    <div class="color-box" style="background:#808040" data-color="#808040"></div>
+                    <div class="color-box" style="background:#004040" data-color="#004040"></div>
+                    <div class="color-box" style="background:#0080FF" data-color="#0080FF"></div>
+                    <div class="color-box" style="background:#004080" data-color="#004080"></div>
+                    <div class="color-box" style="background:#8000FF" data-color="#8000FF"></div>
+                    <div class="color-box" style="background:#804000" data-color="#804000"></div>
+                    <div class="color-box" style="background:#FFFFFF" data-color="#FFFFFF"></div>
+                    <div class="color-box" style="background:#C0C0C0" data-color="#C0C0C0"></div>
+                    <div class="color-box" style="background:#FF0000" data-color="#FF0000"></div>
+                    <div class="color-box" style="background:#FFFF00" data-color="#FFFF00"></div>
+                    <div class="color-box" style="background:#00FF00" data-color="#00FF00"></div>
+                    <div class="color-box" style="background:#00FFFF" data-color="#00FFFF"></div>
+                    <div class="color-box" style="background:#0000FF" data-color="#0000FF"></div>
+                    <div class="color-box" style="background:#FF00FF" data-color="#FF00FF"></div>
+                    <div class="color-box" style="background:#FFFF80" data-color="#FFFF80"></div>
+                    <div class="color-box" style="background:#00FF80" data-color="#00FF80"></div>
+                    <div class="color-box" style="background:#80FFFF" data-color="#80FFFF"></div>
+                    <div class="color-box" style="background:#8080FF" data-color="#8080FF"></div>
+                    <div class="color-box" style="background:#FF0080" data-color="#FF0080"></div>
+                    <div class="color-box" style="background:#FF8040" data-color="#FF8040"></div>
+                </div>
+            </div>
+            <div class="resize-handle"></div>
+        </div>
+    </div>
+
+    <!-- Taskbar -->
+    <div class="taskbar">
+        <button class="start-button" onclick="toggleStartMenu()">
+            <svg viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="9" fill="#FF0000" />
+                <circle cx="10" cy="10" r="9" fill="url(#windowsGrad)" />
+                <defs>
+                    <linearGradient id="windowsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FF0000" />
+                        <stop offset="33%" style="stop-color:#00FF00" />
+                        <stop offset="66%" style="stop-color:#0000FF" />
+                        <stop offset="100%" style="stop-color:#FFFF00" />
+                    </linearGradient>
+                </defs>
+                <rect x="3" y="3" width="6" height="6" rx="1" fill="#FF5722" />
+                <rect x="11" y="3" width="6" height="6" rx="1" fill="#4CAF50" />
+                <rect x="3" y="11" width="6" height="6" rx="1" fill="#2196F3" />
+                <rect x="11" y="11" width="6" height="6" rx="1" fill="#FFC107" />
+            </svg>
+            start
+        </button>
+
+        <!-- Start Menu -->
+        <div class="start-menu" id="start-menu">
+            <div class="start-menu-header">
+                <div class="user-avatar">👤</div>
+                <div class="user-name">User</div>
+            </div>
+            <div class="start-menu-body">
+                <div class="start-menu-left">
+                    <div class="start-menu-item" onclick="bringToFront('ie-window'); toggleStartMenu();">
+                        <svg viewBox="0 0 32 32">
+                            <circle cx="16" cy="16" r="14" fill="#0078D7" /><text x="16" y="22" text-anchor="middle"
+                                fill="white" font-size="16" font-weight="bold" font-style="italic">e</text>
+                        </svg>
+                        <div><strong>Internet Explorer</strong><br><span style="font-size:10px;color:#808080">Browse the
+                                Web</span></div>
+                    </div>
+                    <div class="start-menu-item" onclick="bringToFront('paint-window'); toggleStartMenu();">
+                        <svg viewBox="0 0 32 32">
+                            <rect x="2" y="2" width="28" height="28" fill="#ECE9D8" stroke="#808080" stroke-width="2" />
+                            <circle cx="8" cy="24" r="4" fill="#FF0000" />
+                            <circle cx="16" cy="24" r="4" fill="#00FF00" />
+                            <circle cx="24" cy="24" r="4" fill="#0000FF" />
+                        </svg>
+                        <div><strong>Paint</strong><br><span style="font-size:10px;color:#808080">Create drawings</span>
+                        </div>
+                    </div>
+                    <div class="start-menu-separator"></div>
+                    <div class="start-menu-item">
+                        <svg viewBox="0 0 32 32">
+                            <rect x="4" y="4" width="24" height="24" rx="2" fill="#FFEB3B" stroke="#FBC02D"
+                                stroke-width="2" />
+                        </svg>
+                        <span>All Programs</span>
+                        <span style="margin-left:auto">▶</span>
+                    </div>
+                </div>
+                <div class="start-menu-right">
+                    <div class="start-menu-item">
+                        <svg viewBox="0 0 24 24">
+                            <rect x="2" y="4" width="20" height="16" rx="1" fill="#ECE9D8" stroke="#0054E3"
+                                stroke-width="1.5" />
+                            <rect x="4" y="6" width="16" height="10" fill="#3A6EA5" />
+                        </svg>
+                        <span>My Computer</span>
+                    </div>
+                    <div class="start-menu-item">
+                        <svg viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="18" height="18" rx="1" fill="#FFEB3B" stroke="#FBC02D"
+                                stroke-width="1.5" />
+                        </svg>
+                        <span>My Documents</span>
+                    </div>
+                    <div class="start-menu-separator"></div>
+                    <div class="start-menu-item">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" fill="#0078D7" /><text x="12" y="16" text-anchor="middle"
+                                fill="white" font-size="10" font-weight="bold">?</text>
+                        </svg>
+                        <span>Help and Support</span>
+                    </div>
+                </div>
+            </div>
+            <div class="start-menu-footer">
+                <button class="start-menu-footer-btn">🔒 Log Off</button>
+                <button class="start-menu-footer-btn" onclick="location.reload()">⏻ Turn Off</button>
+            </div>
+        </div>
+        <div class="taskbar-programs">
+            <div class="taskbar-item active" id="taskbar-ie" onclick="restoreWindow('ie-window')">
+                <svg viewBox="0 0 16 16">
+                    <circle cx="8" cy="8" r="7" fill="#0078D7" />
+                    <text x="8" y="12" text-anchor="middle" fill="white" font-size="10" font-weight="bold"
+                        font-style="italic">e</text>
+                </svg>
+                <span>Application Offline - M...</span>
+            </div>
+            <div class="taskbar-item" id="taskbar-paint" onclick="restoreWindow('paint-window')">
+                <svg viewBox="0 0 16 16">
+                    <rect x="1" y="1" width="14" height="14" fill="#ECE9D8" stroke="#808080" />
+                    <circle cx="5" cy="11" r="2" fill="#FF0000" />
+                    <circle cx="8" cy="11" r="2" fill="#00FF00" />
+                    <circle cx="11" cy="11" r="2" fill="#0000FF" />
+                </svg>
+                <span>untitled - Paint</span>
+            </div>
+        </div>
+        <div class="system-tray">
+            <span class="tray-icon">🔊</span>
+            <span class="tray-icon">🛡️</span>
+            <span class="tray-time" id="clock">12:00 PM</span>
+        </div>
+    </div>
+
+    <script>
+        // ==================== LOCAL STORAGE KEYS ====================
+        const STORAGE_KEYS = {
+            WINDOW_POSITIONS: 'xp502_window_positions',
+            CANVAS_DATA: 'xp502_canvas_data',
+            CURRENT_COLOR: 'xp502_current_color',
+            ACTIVE_TOOL: 'xp502_active_tool'
+        };
+
+        // ==================== START MENU ====================
+        function toggleStartMenu() {
+            const menu = document.getElementById('start-menu');
+            menu.classList.toggle('open');
+        }
+
+        // Close start menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('start-menu');
+            const startBtn = document.querySelector('.start-button');
+            if (!menu.contains(e.target) && !startBtn.contains(e.target)) {
+                menu.classList.remove('open');
+            }
+        });
+
+        // ==================== WINDOW MANAGEMENT ====================
+        let activeWindow = null;
+        let isDragging = false;
+        let currentX, currentY, initialX, initialY;
+
+        function saveWindowPositions() {
+            const positions = {};
+            document.querySelectorAll('.window').forEach(w => {
+                positions[w.id] = {
+                    left: w.style.left || w.offsetLeft + 'px',
+                    top: w.style.top || w.offsetTop + 'px',
+                    display: w.style.display || 'block',
+                    zIndex: w.style.zIndex || '10'
+                };
+            });
+            localStorage.setItem(STORAGE_KEYS.WINDOW_POSITIONS, JSON.stringify(positions));
+        }
+
+        function loadWindowPositions() {
+            const saved = localStorage.getItem(STORAGE_KEYS.WINDOW_POSITIONS);
+            if (saved) {
+                const positions = JSON.parse(saved);
+                Object.keys(positions).forEach(id => {
+                    const w = document.getElementById(id);
+                    if (w && positions[id]) {
+                        w.style.left = positions[id].left;
+                        w.style.top = positions[id].top;
+                        w.style.display = positions[id].display || 'block';
+                    }
+                });
+            }
+        }
+
+        function bringToFront(windowId) {
+            const targetWindow = document.getElementById(windowId);
+            if (!targetWindow) return;
+
+            targetWindow.style.display = 'block';
+
+            document.querySelectorAll('.window').forEach(w => {
+                w.classList.remove('active');
+                w.classList.add('inactive');
+            });
+            targetWindow.classList.remove('inactive');
+            targetWindow.classList.add('active');
+
+            updateTaskbarState();
+            saveWindowPositions();
+        }
+
+        function minimizeWindow(windowId) {
+            const w = document.getElementById(windowId);
+            if (w) {
+                w.style.display = 'none';
+                updateTaskbarState();
+                saveWindowPositions();
+            }
+        }
+
+        function restoreWindow(windowId) {
+            const w = document.getElementById(windowId);
+            if (w) {
+                if (w.style.display === 'none') {
+                    w.style.display = 'block';
+                }
+                bringToFront(windowId);
+            }
+        }
+
+        function closeWindow(windowId) {
+            minimizeWindow(windowId);
+        }
+
+        function updateTaskbarState() {
+            document.querySelectorAll('.taskbar-item').forEach(item => {
+                const windowId = item.id.replace('taskbar-', '') + '-window';
+                const w = document.getElementById(windowId);
+                if (w && w.classList.contains('active') && w.style.display !== 'none') {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        // Window dragging
+        document.querySelectorAll('.window').forEach(windowEl => {
+            const titlebar = windowEl.querySelector('.titlebar');
+
+            titlebar.addEventListener('mousedown', (e) => {
+                if (e.target.closest('.window-button')) return;
+
+                isDragging = true;
+                activeWindow = windowEl;
+
+                bringToFront(windowEl.id);
+
+                initialX = e.clientX - windowEl.offsetLeft;
+                initialY = e.clientY - windowEl.offsetTop;
+            });
+
+            windowEl.addEventListener('mousedown', (e) => {
+                if (!e.target.closest('.titlebar')) {
+                    bringToFront(windowEl.id);
+                }
+            });
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging && activeWindow) {
+                e.preventDefault();
+                currentX = Math.max(0, Math.min(e.clientX - initialX, window.innerWidth - 100));
+                currentY = Math.max(0, Math.min(e.clientY - initialY, window.innerHeight - 60));
+
+                activeWindow.style.left = currentX + 'px';
+                activeWindow.style.top = currentY + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                saveWindowPositions();
+            }
+            isDragging = false;
+        });
+
+        // ==================== MS PAINT FUNCTIONALITY ====================
+        const canvas = document.getElementById('paint-canvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let currentTool = localStorage.getItem(STORAGE_KEYS.ACTIVE_TOOL) || 'pencil';
+        let currentColor = localStorage.getItem(STORAGE_KEYS.CURRENT_COLOR) || '#000000';
+        let bgColor = '#FFFFFF';
+        let lastX = 0, lastY = 0;
+        let startX = 0, startY = 0;
+
+        // Initialize canvas
+        function initCanvas() {
+            const savedCanvas = localStorage.getItem(STORAGE_KEYS.CANVAS_DATA);
+            if (savedCanvas) {
+                const img = new Image();
+                img.onload = () => {
+                    ctx.drawImage(img, 0, 0);
+                };
+                img.src = savedCanvas;
+            } else {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function saveCanvas() {
+            localStorage.setItem(STORAGE_KEYS.CANVAS_DATA, canvas.toDataURL());
+        }
+
+        // Update color display
+        function updateColorDisplay() {
+            document.getElementById('fg-color').style.background = currentColor;
+            document.getElementById('bg-color').style.background = bgColor;
+        }
+
+        // Tool selection
+        document.querySelectorAll('.paint-tool').forEach(tool => {
+            tool.addEventListener('click', () => {
+                document.querySelectorAll('.paint-tool').forEach(t => t.classList.remove('active'));
+                tool.classList.add('active');
+                currentTool = tool.dataset.tool;
+                localStorage.setItem(STORAGE_KEYS.ACTIVE_TOOL, currentTool);
+            });
+        });
+
+        // Restore active tool
+        document.querySelectorAll('.paint-tool').forEach(tool => {
+            if (tool.dataset.tool === currentTool) {
+                document.querySelectorAll('.paint-tool').forEach(t => t.classList.remove('active'));
+                tool.classList.add('active');
+            }
+        });
+
+        // Color selection
+        document.querySelectorAll('.color-box').forEach(colorBox => {
+            colorBox.addEventListener('click', (e) => {
+                currentColor = colorBox.dataset.color;
+                localStorage.setItem(STORAGE_KEYS.CURRENT_COLOR, currentColor);
+                updateColorDisplay();
+            });
+            colorBox.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                bgColor = colorBox.dataset.color;
+                updateColorDisplay();
+            });
+        });
+
+        // Drawing
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            lastX = startX = e.clientX - rect.left;
+            lastY = startY = e.clientY - rect.top;
+
+            if (currentTool === 'fill') {
+                ctx.fillStyle = currentColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                saveCanvas();
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            switch (currentTool) {
+                case 'pencil':
+                    ctx.strokeStyle = currentColor;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                    break;
+                case 'brush':
+                    ctx.strokeStyle = currentColor;
+                    ctx.lineWidth = 8;
+                    ctx.beginPath();
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                    break;
+                case 'eraser':
+                    ctx.strokeStyle = bgColor;
+                    ctx.lineWidth = 20;
+                    ctx.beginPath();
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                    break;
+                case 'spray':
+                    ctx.fillStyle = currentColor;
+                    for (let i = 0; i < 20; i++) {
+                        const offsetX = (Math.random() - 0.5) * 20;
+                        const offsetY = (Math.random() - 0.5) * 20;
+                        ctx.fillRect(x + offsetX, y + offsetY, 1, 1);
+                    }
+                    break;
+            }
+
+            lastX = x;
+            lastY = y;
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (!isDrawing) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            switch (currentTool) {
+                case 'line':
+                    ctx.strokeStyle = currentColor;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                    break;
+                case 'rectangle':
+                    ctx.strokeStyle = currentColor;
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(startX, startY, x - startX, y - startY);
+                    break;
+                case 'ellipse':
+                    const radiusX = Math.abs(x - startX) / 2;
+                    const radiusY = Math.abs(y - startY) / 2;
+                    const centerX = startX + (x - startX) / 2;
+                    const centerY = startY + (y - startY) / 2;
+                    ctx.strokeStyle = currentColor;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                    break;
+                case 'rounded':
+                    const w = x - startX;
+                    const h = y - startY;
+                    const r = 10;
+                    ctx.strokeStyle = currentColor;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.roundRect(startX, startY, w, h, r);
+                    ctx.stroke();
+                    break;
+            }
+
+            isDrawing = false;
+            saveCanvas();
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            if (isDrawing) {
+                saveCanvas();
+            }
+            isDrawing = false;
+        });
+
+        // ==================== CLOCK ====================
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            document.getElementById('clock').textContent = `${hours}:${minutes} ${ampm}`;
+        }
+
+        // ==================== INITIALIZATION ====================
+        function init() {
+            loadWindowPositions();
+            initCanvas();
+            updateColorDisplay();
+            updateClock();
+            setInterval(updateClock, 1000);
+            updateTaskbarState();
+        }
+
+        init();
+    </script>
+
+</body>
+
+</html>
