@@ -774,7 +774,7 @@
             </div>
             <div class="address-bar">
                 <span class="address-bar-label">Address</span>
-                <input type="text" class="address-bar-input" value="http://localhost/" readonly>
+                <input type="text" class="address-bar-input" id="ie-address-bar" readonly>
             </div>
             <div class="window-content">
                 <div class="error-content">
@@ -1349,6 +1349,9 @@
             updateClock();
             setInterval(updateClock, 1000);
             updateTaskbarState();
+
+            // Set address bar to current URL
+            document.getElementById('ie-address-bar').value = window.location.href;
         }
 
         init();
